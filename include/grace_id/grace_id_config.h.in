@@ -1,0 +1,43 @@
+/**
+ * @file grace_id_config.h.in
+ * @author Carlo Musolino (musolino@itp.uni-frankfurt.de)
+ * @brief 
+ * @date 2024-09-09
+ * 
+ * @copyright This file is part of the General Relativistic Astrophysics
+ * Code for Exascale.
+ * GRACE is an evolution framework that uses Finite Volume
+ * methods to simulate relativistic spacetimes and plasmas
+ * Copyright (C) 2023 Carlo Musolino
+ *                                    
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *   
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *   
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ */
+
+#ifndef GRACE_ID_CONFIG_H
+#define GRACE_ID_CONFIG_H
+
+#cmakedefine GRACE_ID_USE_FP64
+#ifdef GRACE_ID_USE_FP64
+#define GRACE_REAL double 
+#else 
+#define GRACE_REAL float 
+#endif 
+
+#cmakedefine GRACE_ENABLE_HIP
+#cmakedefine GRACE_ENABLE_CUDA
+#cmakedefine GRACE_ENABLE_OMP
+#cmakedefine GRACE_ENABLE_SERIAL 
+
+#endif /* GRACE_ID_CONFIG_H */
