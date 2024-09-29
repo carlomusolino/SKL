@@ -24,7 +24,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * 
  */
-#ifndef GRACE_ID_UTILS_BLAS_2_HH
-#define GRACE_ID_UTILS_BLAS_2_HH
+#ifndef SKL_UTILS_BLAS_2_HH
+#define SKL_UTILS_BLAS_2_HH
 
 #endif 

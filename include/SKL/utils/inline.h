@@ -4,8 +4,8 @@
  * @brief 
  * @date 2023-03-22
  * 
- * @copyright This file is part of GRACE.
- * GRACE is an evolution framework that uses Finite Difference
+ * @copyright This file is part of SKL.
+ * SKL is an evolution framework that uses Finite Difference
  * methods to simulate relativistic spacetimes and plasmas
  * Copyright (C) 2023 Carlo Musolino
  *                                    
@@ -23,8 +23,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * 
  */
-#ifndef GRACE_UTILS_INLINE_H
-#define GRACE_UTILS_INLINE_H
+#ifndef SKL_UTILS_INLINE_H
+#define SKL_UTILS_INLINE_H
 
 //**********************************************************************************************
 //**********************************************************************************************
@@ -34,9 +34,9 @@
  * \ingroup utils
  */
 #if defined(_MSC_VER) || defined(__INTEL_COMPILER)
-#define GRACE_FORCE_INLINE __forceinline
+#define SKL_FORCE_INLINE __forceinline
 #else
-#define GRACE_FORCE_INLINE inline
+#define SKL_FORCE_INLINE inline
 #endif 
 //**********************************************************************************************
 //**********************************************************************************************
@@ -50,13 +50,13 @@
  * @brief Direct compiler to inline.
  * \ingroup utils
  */
-#if GRACE_USE_ALWAYS_INLINE && defined(__GNUC__)
-#define GRACE_ALWAYS_INLINE inline __attribute__((always_inline))
+#if SKL_USE_ALWAYS_INLINE && defined(__GNUC__)
+#define SKL_ALWAYS_INLINE inline __attribute__((always_inline))
 #else 
-#define GRACE_ALWAYS_INLINE GRACE_FORCE_INLINE 
+#define SKL_ALWAYS_INLINE SKL_FORCE_INLINE 
 #endif 
 //**********************************************************************************************
 //**********************************************************************************************
 //**********************************************************************************************
 
-#endif /* GRACE_UTILS_INLINE_H */
+#endif /* SKL_UTILS_INLINE_H */
