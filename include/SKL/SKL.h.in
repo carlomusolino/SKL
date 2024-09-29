@@ -1,12 +1,12 @@
 /**
- * @file helpers.hh
+ * @file SKL_config.h.in
  * @author Carlo Musolino (musolino@itp.uni-frankfurt.de)
  * @brief 
- * @date 2024-09-10
+ * @date 2024-09-09
  * 
  * @copyright This file is part of the General Relativistic Astrophysics
  * Code for Exascale.
- * GRACE is an evolution framework that uses Finite Volume
+ * SKL is an evolution framework that uses Finite Volume
  * methods to simulate relativistic spacetimes and plasmas
  * Copyright (C) 2023 Carlo Musolino
  *                                    
@@ -25,28 +25,19 @@
  * 
  */
 
-#ifndef GRACE_ID_SOLVERS_HELPERS_HH
-#define GRACE_ID_SOLVERS_HELPERS_HH
+#ifndef SKL_CONFIG_H
+#define SKL_CONFIG_H
 
-#include <grace_id_config.h>
-
-#include <grace_id/utils/device.h>
-#include <grace_id/utils/inline.h>
-
-#include <Kokkos_Core.hpp>
-#include <Sacado.hpp>
-
-namespace utils {
-
-GRACE_REAL GRACE_ALWAYS_INLINE GRACE_HOST_DEVICE 
-norm( grace::fad_view<GRACE_REAL> v ) {
-    GRACE_REAL sum{0} ; 
-    for( int ii=0; ii<v.extent(0); ++vv) {
-        sum += math::int_pow<2>(v(ii).val()) ; 
-    }
-    return Kokkos::sqrt(sum) ; 
-}
-
-}
-
+#cmakedefine SKL_USE_FP64
+#ifdef SKL_USE_FP64
+#define SKL_REAL double 
+#else 
+#define SKL_REAL float 
 #endif 
+
+#cmakedefine SKL_ENABLE_HIP
+#cmakedefine SKL_ENABLE_CUDA
+#cmakedefine SKL_ENABLE_OMP
+#cmakedefine SKL_ENABLE_SERIAL 
+
+#endif /* SKL_CONFIG_H */

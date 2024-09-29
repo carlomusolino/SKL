@@ -1,12 +1,12 @@
 /**
- * @file linalg.hh
+ * @file coordinate_mapping.hpp
  * @author Carlo Musolino (musolino@itp.uni-frankfurt.de)
  * @brief 
- * @date 2024-09-10
+ * @date 2024-09-09
  * 
  * @copyright This file is part of the General Relativistic Astrophysics
  * Code for Exascale.
- * GRACE is an evolution framework that uses Finite Volume
+ * SKL is an evolution framework that uses Finite Volume
  * methods to simulate relativistic spacetimes and plasmas
  * Copyright (C) 2023 Carlo Musolino
  *                                    
@@ -23,24 +23,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  * 
- * 
- * 
  */
 
-#ifndef GRACE_ID_UTILS_LINALG_HH
-#define GRACE_ID_UTILS_LINALG_HH
+#ifndef SKL_MAPPINGS_COORDINATE_MAPPING_HH
+#define SKL_MAPPINGS_COORDINATE_MAPPING_HH
 
-#include <grace_id_config.h>
+#include <SKL_config.h>
 
-#include <grace_id/utils/inline.h>
-#include <grace_id/utils/types.hh>
+#include <SKL/utils/device.h>
+#include <SKL/utils/inline.h>
 
-#include <grace_id/utils/blas/grace_blas_1.hh>
-#include <grace_id/utils/blas/grace_blas_2.hh>
-#include <grace_id/utils/blas/grace_blas_3.hh> 
+namespace skl {
 
-#include <Kokkos_Core.hpp>
 
-#include <Sacado.hpp>
 
-#endif /* GRACE_ID_UTILS_LINALG_HH */
+template< typename deriv_t >
+class coordinate_mapping 
+{
+ public: 
+    
+    template< typename T >
+    T SKL_ALWAYS_INLINE SKL_HOST_DEVICE 
+    operator() (T const& xp) {
+        return static_cast<deriv_t const *> ( this ) ->template phys_to_log<T>(xp) ; 
+    }
+
+    template< typename T >
+    T SKL_ALWAYS_INLINE SKL_HOST_DEVICE 
+    inverse (T const& xp) {
+        return static_cast<deriv_t const *> ( this ) ->template log_to_phys<T>(xp) ; 
+    }
+
+} ; 
+
+}
+
+#endif /* SKL_MAPPINGS_COORDINATE_MAPPING_HH */

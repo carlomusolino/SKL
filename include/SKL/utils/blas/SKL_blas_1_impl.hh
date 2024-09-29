@@ -25,14 +25,14 @@
  * 
  */
 
-#ifndef GRACE_ID_UTILS_BLAS_1_IMPL_HH
-#define GRACE_ID_UTILS_BLAS_1_IMPL_HH
+#ifndef SKL_UTILS_BLAS_1_IMPL_HH
+#define SKL_UTILS_BLAS_1_IMPL_HH
 
-#include <grace_id_config.h>
+#include <SKL_config.h>
 
-#include <grace_id/utils/inline.h>
-#include <grace_id/utils/device.h>
-#include <grace_id/utils/types.hh>
+#include <SKL/utils/inline.h>
+#include <SKL/utils/device.h>
+#include <SKL/utils/types.hh>
 
 #include <Kokkos_Core.hpp>
 #include <Sacado.hpp> 
@@ -223,4 +223,4 @@ _axpy(scalar_t const& alpha, in_view_t const& x, out_view_t const& y)
 
 }}
 
-#endif /* GRACE_ID_UTILS_BLAS_1_IMPL_HH */
+#endif /* SKL_UTILS_BLAS_1_IMPL_HH */

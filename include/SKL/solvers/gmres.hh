@@ -6,7 +6,7 @@
  * 
  * @copyright This file is part of the General Relativistic Astrophysics
  * Code for Exascale.
- * GRACE is an evolution framework that uses Finite Volume
+ * SKL is an evolution framework that uses Finite Volume
  * methods to simulate relativistic spacetimes and plasmas
  * Copyright (C) 2023 Carlo Musolino
  *                                    
@@ -25,31 +25,29 @@
  * 
  */
 
-#ifndef GRACE_ID_SOLVERS_GMRES_HH
-#define GRACE_ID_SOLVERS_GMRES_HH
+#ifndef SKL_SOLVERS_GMRES_HH
+#define SKL_SOLVERS_GMRES_HH
 
-#include <grace_id_config.h>
+#include <SKL_config.h>
 
-#include <grace_id/utils/device.h>
-#include <grace_id/utils/inline.h>
-#include <grace_id/utils/types.hh>
-#include <grace_id/utils/linalg.hh>
-#include <grace_id/solvers/helpers.hh>
+#include <SKL/utils/device.h>
+#include <SKL/utils/inline.h>
+#include <SKL/utils/types.hh>
+#include <SKL/utils/linalg.hh>
+#include <SKL/solvers/helpers.hh>
 
 #include <Kokkos_Core.hpp>
-#include<KokkosBlas1_team_nrm2.hpp>
-#include<KokkosBlas1_nrm2.hpp>
+#include <KokkosBlas1_team_nrm2.hpp>
+#include <KokkosBlas1_nrm2.hpp>
 
 #include <Sacado.hpp>
 
-namespace grace {
+namespace skl {
 
 class gmres {
-    using thread_team_t = Kokkos::TeamPolicy<Kokkos::DefaultExecutionSpace> ; 
-    using team_member_t = thread_team_t::member_type                        ; 
 
  public: 
-    gmres( size_t problem_size, size_t max_iter, GRACE_REAL tol )
+    gmres( size_t problem_size, size_t max_iter, SKL_REAL tol )
      : _N(problem_size), _max_iter(max_iter), _tol(tol) 
     {
         Kokkos::realloc(Q, _N, _max_iter, 2) ; 
@@ -64,7 +62,6 @@ class gmres {
         using namespace Kokkos; 
         // Initialization: we batch the operations by launching 
         // a single thread team that will perform all operations. 
-        thread_team_t policy(1,AUTO) ; 
         double b_norm, err; 
         
         auto q = subview(Q, ALL(), 0) ; 
@@ -108,27 +105,30 @@ class gmres {
         using namespace Kokkos ; 
 
         static constexpr double eps = 1e-12 ; 
+        /* Best accessed on host */
+        auto h_H = create_mirror_view(H) ; 
+        deep_copy(h_H, H) ; 
 
         auto q = Kokkos::subview(Q, Kokkos::ALL(), n) ; 
-        auto v = res.jvp( q)     ;  
+        auto v = res.jvp(q)     ;  
         for(int j=0; j<=n; ++j) {
                 auto q1  = Kokkos::subview(Q, Kokkos::ALL(), j) ; 
                 H(j,n) = utils::linalg::dot(q1, v) ;  
+                utils::linalg::axpy(-H(j,n), q1, v) ; // Gram-Schmidt projection
+                #if 0 
                 parallel_for( "Arnoldi_Gram_Schmidt_projection", _N 
                             , KOKKOS_LAMBDA (int l) 
                         {
                             v(l) = v(l) - H(j,n) * q1(l) ; 
                         }
                 ) ; 
+                #endif 
         }
-        H(n+1,n) = utils::linalg::norm<2>(v) ;
+        H(n+1,n) = utils::linalg::nrm2(v) ;
         if ( H(n+1,n) > eps ) {
-            parallel_for( "Arnoldi_normalize", _N 
-                            , KOKKOS_LAMBDA (int l) 
-                        {
-                            Q(l,k) = v(l)/H(n+1,n) ; 
-                        }
-            ) ;
+            auto qq = subview(Q, ALL(), k) ; 
+            deep_copy(qq, v) ; 
+            utils::linalg::scal(qq, 1./H(n+1,n)) ; // Rescale ( TODO scal in blas-1 interface )
         } 
     }
 
@@ -137,7 +137,7 @@ class gmres {
         parallel_for( "GMRES_Givens_rotation", n-1
                     , KOKKOS_LAMBDA( int i ) 
             {
-                GRACE_REAL tmp = cs(i) * H(i, n) + sn(i) * H(i+1, n) ; 
+                SKL_REAL tmp = cs(i) * H(i, n) + sn(i) * H(i+1, n) ; 
                 H(i+1,n) = - sn(i) * H(i, n) + cs(i) * H(i+1, n)   ; 
                 H(i,  n) = tmp ;     
             }
@@ -146,9 +146,9 @@ class gmres {
         parallel_for( "GMRES_Givens_rotation", 1
                     , KOKKOS_LAMBDA( int _dummy ) 
             {
-                GRACE_REAL v1 = H(n,  n) ; 
-                GRACE_REAL v2 = H(n+1,n) ; 
-                GRACE_REAL t = Kokkos::sqrt( math::int_pow<2>(v1) + math::int_pow<2>(v2) )
+                SKL_REAL v1 = H(n,  n) ; 
+                SKL_REAL v2 = H(n+1,n) ; 
+                SKL_REAL t = Kokkos::sqrt( math::int_pow<2>(v1) + math::int_pow<2>(v2) )
                 cs(n) =  v1 / t ; 
                 sn(n) =  v2 / t ; 
                 H(n,n) = cs(n) + H(n,n) + sn(n) * H(n+1,n) ; 
@@ -165,14 +165,14 @@ class gmres {
     
     Kokkos::View<sfad_t<1>**, Kokkos::DeafultExecutionSpace> Q      ; 
     Kokkos::View<sfad_t<1>*, Kokkos::DeafultExecutionSpace>  cs, sn, beta ; 
-    Kokkos::View<double**, Kokkos::DefaultExecutionSpace> H         ; //!< Hessenberg matrix
+    Kokkos::View<double**, Kokkos::HostExecutionSpace> H         ; //!< Hessenberg matrix ( stored on host )
 
     size_t _N        ; //!< Size of the problem to invert 
     size_t _max_iter ; //!< Maximum number of iterations before restart
-    GRACE_REAL _tol  ; //!< Absolute tolerance 
+    SKL_REAL _tol  ; //!< Absolute tolerance 
 } ; 
 
 
 }
 
-#endif /* GRACE_ID_SOLVERS_GMRES_HH */
+#endif /* SKL_SOLVERS_GMRES_HH */

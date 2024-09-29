@@ -6,7 +6,7 @@
  * 
  * @copyright This file is part of the General Relativistic Astrophysics
  * Code for Exascale.
- * GRACE is an evolution framework that uses Finite Volume
+ * SKL is an evolution framework that uses Finite Volume
  * methods to simulate relativistic spacetimes and plasmas
  * Copyright (C) 2023 Carlo Musolino
  *                                    
@@ -25,20 +25,20 @@
  * 
  */
 
-#ifndef GRACE_ID_UTILS_TYPES_HH
-#define GRACE_ID_UTILS_TYPES_HH
+#ifndef SKL_UTILS_TYPES_HH
+#define SKL_UTILS_TYPES_HH
 
-#include <grace_id_config.h>
+#include <SKL_id_config.h>
 
 #include <Sacado.hpp>
 #include <Kokkos_Core.hpp>
 
-namespace grace {
+namespace skl {
 
 template< size_t n_der >
-using sfad_t = Sacado::Fad::SFad<GRACE_REAL,n_der> ; 
+using sfad_t = Sacado::Fad::SFad<SKL_REAL,n_der> ; 
 
-using fad_t  = Sacado::Fad::DFad<GRACE_REAL>        ; 
+using fad_t  = Sacado::Fad::DFad<SKL_REAL>        ; 
 
 template < size_t n_der >
 using sfad_view_t = Kokkos::View<sfad_t<n_der>*, Kokkos::DefaultExecutionSpace> ;

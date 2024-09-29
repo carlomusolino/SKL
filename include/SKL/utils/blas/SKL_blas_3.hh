@@ -25,13 +25,13 @@
  * 
  */
 
-#ifndef GRACE_ID_UTILS_BLAS_3_HH
-#define GRACE_ID_UTILS_BLAS_3_HH
+#ifndef SKL_UTILS_BLAS_3_HH
+#define SKL_UTILS_BLAS_3_HH
 
-#include <grace_id_config.h>
+#include <SKL_config.h>
 
-#include <grace_id/utils/inline.h>
-#include <grace_id/utils/types.hh>
+#include <SKL/utils/inline.h>
+#include <SKL/utils/types.hh>
 
 #include <Kokkos_Core.hpp>
 #include <KokkosBlas3_trsm.hpp> 

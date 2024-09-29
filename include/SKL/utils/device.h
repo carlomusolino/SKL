@@ -5,8 +5,8 @@
  * @version 0.1
  * @date 2024-03-11
  * 
- * @copyright This file is part of GRACE.
- * GRACE is an evolution framework that uses Finite Difference 
+ * @copyright This file is part of SKL.
+ * SKL is an evolution framework that uses Finite Difference 
  * methods to simulate relativistic astrophysical systems and plasma
  * dynamics.
  * Copyright (C) 2023 Carlo Musolino
@@ -26,34 +26,26 @@
  * 
  */
 
-#include <grace_id_config.h>
+#include <SKL_config.h>
 
-#ifndef GRACE_UTILS_DEVICE_H
-#define GRACE_UTILS_DEVICE_H
+#ifndef SKL_UTILS_DEVICE_H
+#define SKL_UTILS_DEVICE_H
 
-#if defined(GRACE_ENABLE_CUDA) or defined (GRACE_ENABLE_HIP)
-#define GRACE_DEVICE __device__ 
-#define GRACE_HOST   __host__ 
-#define GRACE_HOST_DEVICE __host__ __device__
-#ifndef GRACE_ALLOW_DEVICE_CONDITIONALS
+#if defined(SKL_ENABLE_CUDA) or defined (SKL_ENABLE_HIP)
+#define SKL_DEVICE __device__ 
+#define SKL_HOST   __host__ 
+#define SKL_HOST_DEVICE __host__ __device__
+#ifndef SKL_ALLOW_DEVICE_CONDITIONALS
 #define DEVICE_CONDITIONAL(cond,a,b) ((static_cast<bool>(cond)) * a + (1-static_cast<bool>(cond)) * b) 
 #else 
 #define DEVICE_CONDITIONAL(cond,a,b) ((cond) ? a : b)
 #endif
 #else 
-#define GRACE_DEVICE 
-#define GRACE_HOST 
-#define GRACE_HOST_DEVICE 
+#define SKL_DEVICE 
+#define SKL_HOST 
+#define SKL_HOST_DEVICE 
 #define DEVICE_CONDITIONAL(cond,a,b) ((cond) ? a : b)
 #endif 
 
-namespace grace {
-void device_malloc(void** ptr, size_t nbyte);
 
-void memcpy_device_to_host(void* dest, void* src, size_t nbyte);
-
-void memcpy_host_to_device(void* dest, void* src, size_t nbyte);
-
-void device_free(void* ptr) noexcept; 
-}
 #endif 

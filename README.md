@@ -1,3 +1,3 @@
-## GRACE-ID 
+## SpeKtraLib
 
-Spectral solvers for BNS initial data in GRACE.
+Kokkos-based matrix free spectral solver for elliptic PDEs.

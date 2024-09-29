@@ -1,12 +1,12 @@
 /**
- * @file linear_mapping.hh
+ * @file helpers.hh
  * @author Carlo Musolino (musolino@itp.uni-frankfurt.de)
  * @brief 
- * @date 2024-09-09
+ * @date 2024-09-10
  * 
  * @copyright This file is part of the General Relativistic Astrophysics
  * Code for Exascale.
- * GRACE is an evolution framework that uses Finite Volume
+ * SKL is an evolution framework that uses Finite Volume
  * methods to simulate relativistic spacetimes and plasmas
  * Copyright (C) 2023 Carlo Musolino
  *                                    
@@ -25,38 +25,27 @@
  * 
  */
 
-#ifndef GRACE_ID_MAPPINGS_LINEAR_MAPPING_HH
-#define GRACE_ID_MAPPINGS_LINEAR_MAPPING_HH
+#ifndef SKL_SOLVERS_HELPERS_HH
+#define SKL_SOLVERS_HELPERS_HH
 
-#include <grace_id_config.h>
+#include <SKL_config.h>
 
-#include <grace_id/mappings/coordinate_mapping.hh>
+#include <SKL/utils/device.h>
+#include <SKL/utils/inline.h>
 
-namespace grace_id {
+#include <Kokkos_Core.hpp>
+#include <Sacado.hpp>
 
-class linear_coordinate_mapping 
- : public coordinate_mapping<linear_coordinate_mapping> 
-{
- public:
-    linear_coordinate_mapping( GRACE_REAL const _a, GRACE_REAL const _b )
-     : a(_a), b(_b), ai(1./_a)
-    {} 
+namespace utils {
 
-    template < typename T>
-    T GRACE_ALWAYS_INLINE GRACE_HOST_DEVICE 
-    log_to_phys(T const& xl ) const {
-        return (xl-b) * ai ; 
+SKL_REAL SKL_ALWAYS_INLINE SKL_HOST_DEVICE 
+norm( skl::fad_view<SKL_REAL> v ) {
+    SKL_REAL sum{0} ; 
+    for( int ii=0; ii<v.extent(0); ++vv) {
+        sum += math::int_pow<2>(v(ii).val()) ; 
     }
-
-    template < typename T>
-    T GRACE_ALWAYS_INLINE GRACE_HOST_DEVICE 
-    phys_to_log(T const& xp ) const {
-        return a * xp + b ; 
-    }   
-
- private: 
-    GRACE_REAL a,b, ai ; 
-} ; 
+    return Kokkos::sqrt(sum) ; 
+}
 
 }
 

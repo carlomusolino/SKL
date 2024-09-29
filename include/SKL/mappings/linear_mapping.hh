@@ -1,12 +1,12 @@
 /**
- * @file grace_id_config.h.in
+ * @file linear_mapping.hh
  * @author Carlo Musolino (musolino@itp.uni-frankfurt.de)
  * @brief 
  * @date 2024-09-09
  * 
  * @copyright This file is part of the General Relativistic Astrophysics
  * Code for Exascale.
- * GRACE is an evolution framework that uses Finite Volume
+ * SKL is an evolution framework that uses Finite Volume
  * methods to simulate relativistic spacetimes and plasmas
  * Copyright (C) 2023 Carlo Musolino
  *                                    
@@ -25,19 +25,39 @@
  * 
  */
 
-#ifndef GRACE_ID_CONFIG_H
-#define GRACE_ID_CONFIG_H
+#ifndef SKL_MAPPINGS_LINEAR_MAPPING_HH
+#define SKL_MAPPINGS_LINEAR_MAPPING_HH
 
-#cmakedefine GRACE_ID_USE_FP64
-#ifdef GRACE_ID_USE_FP64
-#define GRACE_REAL double 
-#else 
-#define GRACE_REAL float 
+#include <SKL_config.h>
+
+#include <SKL/mappings/coordinate_mapping.hh>
+
+namespace skl {
+
+class linear_coordinate_mapping 
+ : public coordinate_mapping<linear_coordinate_mapping> 
+{
+ public:
+    linear_coordinate_mapping( SKL_REAL const _a, SKL_REAL const _b )
+     : a(_a), b(_b), ai(1./_a)
+    {} 
+
+    template < typename T>
+    T SKL_ALWAYS_INLINE SKL_HOST_DEVICE 
+    log_to_phys(T const& xl ) const {
+        return (xl-b) * ai ; 
+    }
+
+    template < typename T>
+    T SKL_ALWAYS_INLINE SKL_HOST_DEVICE 
+    phys_to_log(T const& xp ) const {
+        return a * xp + b ; 
+    }   
+
+ private: 
+    SKL_REAL a,b, ai ; 
+} ; 
+
+}
+
 #endif 
-
-#cmakedefine GRACE_ENABLE_HIP
-#cmakedefine GRACE_ENABLE_CUDA
-#cmakedefine GRACE_ENABLE_OMP
-#cmakedefine GRACE_ENABLE_SERIAL 
-
-#endif /* GRACE_ID_CONFIG_H */

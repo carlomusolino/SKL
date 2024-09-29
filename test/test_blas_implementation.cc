@@ -1,18 +1,21 @@
-#include <grace_id_config.h>
+#include <SKL_config.h>
 
-#include <grace_id/utils/linalg.hh>
-#include <grace_id/utils/types.hh> 
+#include <SKL/utils/linalg.hh>
+#include <SKL/utils/types.hh> 
 
 #include <Sacado.hpp>
 #include <vector>
 #include <iostream>
+
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include <Kokkos_Core.hpp> 
 
 #include <cassert> 
 
 int main() {
-    using namespace grace ; 
+    using namespace skl ; 
     constexpr size_t n_der = 1  ;   
     constexpr size_t m     = 10 ;
 
@@ -35,18 +38,30 @@ int main() {
         auto a_fad_norm = utils::linalg::nrm2(a_fad) ; 
         auto a_norm     = utils::linalg::nrm2(a)     ; 
 
-        assert( Kokkos::fabs(a_fad_norm - a_norm < 1e-10) ) ; 
-        assert( Kokkos::fabs(a_nom - Kokkos::sqrt(10) < 1e-10) ) ; 
+        CHECK_THAT( 
+            Kokkos::fabs(a_fad_norm - a_norm ),
+            Catch::Matchers::WithinAbs(0, 1e-10 ) ) ; 
+        CHECK_THAT( 
+            Kokkos::fabs(a_norm - Kokkos::sqrt(10) ),
+            Catch::Matchers::WithinAbs(0, 1e-10 ) ) ; 
 
         auto ab_fad  = utils::linalg::dot(a_fad,b_fad) ; 
         auto a_fad_b = utils::linalg::dot(a_fad,b)     ; 
         auto a_b_fad  = utils::linalg::dot(a,b_fad)     ; 
         auto ab      = utils::linalg::dot(a,b)         ;
-
-        assert( Kokkos::fabs(ab_fad - 20) < 1e-10 ) ; 
-        assert( Kokkos::fabs(ab_fad - a_fad_b) < 1e-10 ) ; 
-        assert( Kokkos::fabs(ab_fad - a_b_fad) < 1e-10 ) ; 
-        assert( Kokkos::fabs(ab_fad - ab) < 1e-10 ) ; 
+        
+        CHECK_THAT( 
+            Kokkos::fabs(ab_fad - 20. ),
+            Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
+        CHECK_THAT( 
+            Kokkos::fabs(ab_fad - a_fad_b ),
+            Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
+        CHECK_THAT( 
+            Kokkos::fabs(ab_fad - a_b_fad ),
+            Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
+        CHECK_THAT( 
+            Kokkos::fabs(ab_fad - ab ),
+            Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
 
 
         // Now test scal 
@@ -62,50 +77,66 @@ int main() {
         auto h_y_fad = Kokkos::create_mirror_view(y_fad) ; 
         Kokkos::deep_copy(h_y_fad,y_fad) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y_fad(i).val() - 2.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y_fad(i).val() - 2.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // Then: try having alpha as double 
         utils::linalg::scal(y_fad, alpha, a_fad) ; 
         Kokkos::deep_copy(h_y_fad,y_fad) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y_fad(i).val() - 2.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y_fad(i).val() - 2.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // Then: try having x as View<double*> 
         utils::linalg::scal(y_fad, alpha_fad, a) ; 
         Kokkos::deep_copy(h_y_fad,y_fad) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y_fad(i).val() - 2.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y_fad(i).val() - 2.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // Then: try having x sas View<double*> and alpha as double
         utils::linalg::scal(y_fad, alpha, a) ; 
         Kokkos::deep_copy(h_y_fad,y_fad) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y_fad(i).val() - 2.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y_fad(i).val() - 2.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ; 
         }
         // Then: try all scalar types
         utils::linalg::scal(y, alpha, a) ; 
         auto h_y = Kokkos::create_mirror_view(y) ; 
         Kokkos::deep_copy(h_y,y) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y(i) - 2.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y(i) - 2.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ; 
         }
         // Then: try alpha fad scalar types
         utils::linalg::scal(y, alpha_fad, a) ; 
         Kokkos::deep_copy(h_y,y) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y(i) - 2.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y(i) - 2.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // Then: try x fad scalar types
         utils::linalg::scal(y, alpha, a_fad) ; 
         Kokkos::deep_copy(h_y,y) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y(i) - 2.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y(i) - 2.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // Then: try alpha fad scalar types
         utils::linalg::scal(y, alpha_fad, a_fad) ; 
         Kokkos::deep_copy(h_y,y) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y(i) - 2.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y(i) - 2.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         
         // Test axpy 
@@ -113,49 +144,65 @@ int main() {
         utils::linalg::axpy(alpha_fad, a_fad, y_fad) ; 
         Kokkos::deep_copy(h_y_fad,y_fad) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y_fad(i).val() - 4.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y_fad(i).val() - 4.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // Then: try having alpha as double 
         utils::linalg::axpy(alpha, a_fad, y_fad) ; 
         Kokkos::deep_copy(h_y_fad,y_fad) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y_fad(i).val() - 4.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y_fad(i).val() - 4.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // Then: try having x as View<double*> 
         utils::linalg::axpy(alpha_fad, a, y_fad) ; 
         Kokkos::deep_copy(h_y_fad,y_fad) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y_fad(i).val() - 4.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y_fad(i).val() - 4.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // Then: try having x sas View<double*> and alpha as double
         utils::linalg::axpy(alpha, a, y_fad) ; 
         Kokkos::deep_copy(h_y_fad,y_fad) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y_fad(i).val() - 4.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y_fad(i).val() - 4.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // Then: try all scalar types
         utils::linalg::axpy(alpha, a, y) ; 
         Kokkos::deep_copy(h_y,y) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y(i) - 4.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y(i) - 4.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // Then: try alpha fad scalar types
         utils::linalg::axpy(alpha_fad, a, y) ; 
         Kokkos::deep_copy(h_y,y) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y(i) - 4.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y(i) - 4.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // Then: try x fad scalar types
         utils::linalg::axpy(alpha, a_fad, y) ; 
         Kokkos::deep_copy(h_y,y) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y(i) - 4.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y(i) - 4.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // Then: try alpha fad scalar types
         utils::linalg::axpy(alpha_fad, a_fad, y) ; 
         Kokkos::deep_copy(h_y,y) ; 
         for( int i=0; i<m; ++i) {
-            assert( Kokkos::fabs(h_y(i) - 4.) < 1e-10 ) ; 
+            CHECK_THAT( 
+                Kokkos::fabs(h_y(i) - 4.),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
 
         // Check the BLAS-3 trsm routine
@@ -207,25 +254,33 @@ int main() {
         utils::linalg::trsm(side,uplo,trans,diag, alpha_fad, A_fad, B_fad) ; 
         Kokkos::deep_copy(h_B_fad, B_fad) ; 
         for(int ii=0; ii<m_mat; ++ii) {
-            assert(Kokkos::fabs(sol[ii] - h_B_fad(ii,0).val()) < 1e-10 ) ;
+            CHECK_THAT( 
+                Kokkos::fabs(sol[ii] - h_B_fad(ii,0).val()),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // Then try all fad with oned B
         utils::linalg::trsm(side,uplo,trans,diag, alpha_fad, A_fad, B_oned_fad) ; 
         Kokkos::deep_copy(h_B_oned_fad, B_oned_fad) ; 
         for(int ii=0; ii<m_mat; ++ii) {
-            assert(Kokkos::fabs(sol[ii] - h_B_oned_fad(ii).val()) < 1e-10 ) ;
+            CHECK_THAT( 
+                Kokkos::fabs(sol[ii] - h_B_oned_fad(ii).val()),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // Now try A non fad
         utils::linalg::trsm(side,uplo,trans,diag, alpha_fad, A, B_fad) ; 
         Kokkos::deep_copy(h_B_fad, B_fad) ; 
         for(int ii=0; ii<m_mat; ++ii) {
-            assert(Kokkos::fabs(sol[ii] - h_B_fad(ii,0).val()) < 1e-10 ) ;
+            CHECK_THAT( 
+                Kokkos::fabs(sol[ii] - h_B_oned_fad(ii).val()),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // And with oned B
         utils::linalg::trsm(side,uplo,trans,diag, alpha_fad, A, B_oned_fad) ; 
         Kokkos::deep_copy(h_B_oned_fad, B_oned_fad) ; 
         for(int ii=0; ii<m_mat; ++ii) {
-            assert(Kokkos::fabs(sol[ii] - h_B_oned_fad(ii).val()) < 1e-10 ) ;
+            CHECK_THAT( 
+                Kokkos::fabs(sol[ii] - h_B_oned_fad(ii).val()),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
 
         // Now try B non fad
@@ -238,24 +293,27 @@ int main() {
         utils::linalg::trsm(side,uplo,trans,diag, alpha, A, B_oned) ; 
         Kokkos::deep_copy(h_B_oned, B_oned) ; 
         for(int ii=0; ii<m_mat; ++ii) {
-            assert(Kokkos::fabs(sol[ii] - h_B_oned(ii).val()) < 1e-10 ) ;
+            CHECK_THAT( 
+                Kokkos::fabs(sol[ii] - h_B_oned(ii).val()),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
 
         // Go back to A_fad
         utils::linalg::trsm(side,uplo,trans,diag, alpha, A_fad, B) ; 
         Kokkos::deep_copy(h_B, B) ; 
         for(int ii=0; ii<m_mat; ++ii) {
-            assert(Kokkos::fabs(sol[ii] - h_B(ii,0).val()) < 1e-10 ) ;
+            CHECK_THAT( 
+                Kokkos::fabs(sol[ii] - h_B(ii,0).val()),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
         // And with oned B
         utils::linalg::trsm(side,uplo,trans,diag, alpha, A_fad, B_oned) ; 
         Kokkos::deep_copy(h_B_oned, B_oned) ; 
         for(int ii=0; ii<m_mat; ++ii) {
-            assert(Kokkos::fabs(sol[ii] - h_B_oned(ii).val()) < 1e-10 ) ;
+            CHECK_THAT( 
+                Kokkos::fabs(sol[ii] - h_B_oned(ii).val()),
+                Catch::Matchers::WithinAbs(0, 1e-10 ) ) ;
         }
-
-
-        std::cout << "All tests passed." << std::endl ; 
 
     }
     Kokkos::finalize() ; 

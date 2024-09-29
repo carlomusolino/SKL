@@ -1,13 +1,13 @@
 #include <iostream>
 
-#include <grace_id/mappings/linear_mapping.hh>
+#include <SKL/mappings/linear_mapping.hh>
 
 #include <Sacado.hpp>
 
 
 
 int main() {
-    using namespace grace_id ; 
+    using namespace skl ; 
     // Check if Sacado is working by creating a simple FAD object
     Sacado::Fad::DFad<double> x = 3.0;
     x.diff(0, 1); // Set x as the independent variable
